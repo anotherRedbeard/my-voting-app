@@ -1,6 +1,42 @@
 # My Voting App
 
-This repository tracks the implementation of a .NET voting application.
+A .NET voting application built with ASP.NET Core Razor Pages.
+
+## Prerequisites
+
+- [.NET 8 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+
+## Getting Started
+
+```bash
+# Restore dependencies
+dotnet restore MyVotingApp.slnx
+
+# Build the solution
+dotnet build MyVotingApp.slnx
+
+# Run the web application
+dotnet run --project src/MyVotingApp.Web
+
+# Run the tests
+dotnet test MyVotingApp.slnx
+```
+
+## Project Structure
+
+```
+MyVotingApp.slnx              # Solution file
+src/
+  MyVotingApp.Web/             # ASP.NET Core Razor Pages web application
+    Models/                    # Domain models
+    Services/                  # Business logic and service interfaces
+    Data/                      # Data access (EF Core, DbContext)
+    Pages/                     # Razor Pages
+    Program.cs                 # Application entry point
+  MyVotingApp.Tests/           # xUnit test project
+docs/
+  implementation-plan.md       # Implementation roadmap
+```
 
 ## Planning
 

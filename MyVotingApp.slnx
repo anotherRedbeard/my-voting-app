@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/MyVotingApp.Tests/MyVotingApp.Tests.csproj" />
+    <Project Path="src/MyVotingApp.Web/MyVotingApp.Web.csproj" />
+  </Folder>
+</Solution>
