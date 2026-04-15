@@ -23,9 +23,9 @@ Aggregated vote total for a single voting item.
 
 ## Business Rules
 
-1. **Multiple-choice voting** — Users may vote for more than one item. Each item is an independent choice, so a user can cast one vote per item rather than one vote across the entire poll.
+1. **Multiple-choice voting** — Users may vote for more than one item. Each item is an independent choice rather than a single selection across the entire poll. In the MVP, there is no limit on how many times a user can vote for any item because there is no user identity to track.
 
-2. **One vote per user per item** (enforced in the authentication phase) — Once authentication is added, each authenticated user may vote at most once for any given item. Before authentication is implemented, the MVP does not restrict repeat votes.
+2. **One vote per user per item** (future — enforced in the authentication phase) — Once authentication is added, each authenticated user may vote at most once for any given item. This rule is not enforced in the MVP.
 
 3. **Anonymous voting in MVP** — The MVP allows anyone to vote without signing in. Vote restriction enforcement is deferred to the authentication phase.
 
