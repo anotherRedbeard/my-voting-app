@@ -5,6 +5,45 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Vote for Your Favorite</h1>
+    <p class="lead">Choose an item below and cast your vote!</p>
 </div>
+
+@if (Model.Items.Count == 0)
+{
+    <div class="alert alert-info text-center" role="alert">
+        No items available for voting at this time.
+    </div>
+}
+else
+{
+    <div class="row justify-content-center">
+        @foreach (var item in Model.Items)
+        {
+            <div class="col-12 col-sm-6 col-md-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@item.Name</h5>
+                        @if (!string.IsNullOrWhiteSpace(item.Description))
+                        {
+                            <p class="card-text text-muted">@item.Description</p>
+                        }
+                        <form method="post" class="mt-auto">
+                            <input type="hidden" name="itemId" value="@item.Id" />
+                            <button type="submit" class="btn btn-primary w-100">
+                                Vote
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- Placeholder for authentication messaging (future integration) -->
+<!--
+<div class="alert alert-warning text-center" role="alert">
+    Please sign in to vote.
+</div>
+-->
