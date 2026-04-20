@@ -23,7 +23,7 @@ This document is the repo-tracked version of the implementation plan and should 
 3. ~~Implement an in-memory vote service or repository for the MVP. It should support listing voting items, submitting a vote for a selected item, and returning updated totals. This depends on step 2.~~ ✅ Done
 4. ~~Build the Razor Pages UI for the MVP flow. The home page should list all voteable items, render one vote button per item, submit a vote, and then show current totals immediately after voting. This depends on step 3 and can proceed in parallel with step 5 once the contract is agreed.~~ ✅ Done (issues #4, #5)
 5. ~~Add HTTP endpoints or page handlers for listing items and recording votes. Keep the boundary thin and reuse the vote service so the app can later swap in a database-backed implementation. This depends on step 3.~~ ✅ Done (issue #5)
-6. Add MVP tests. Cover vote counting rules, invalid item handling, and the post-vote result flow. This depends on steps 3 through 5.
+6. ~~Add MVP tests. Cover vote counting rules, invalid item handling, and the post-vote result flow. This depends on steps 3 through 5.~~ ✅ Done (issue #6)
 
 ### Phase 2: Persistence
 
