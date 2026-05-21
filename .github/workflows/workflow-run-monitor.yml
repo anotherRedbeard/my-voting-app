@@ -41,6 +41,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
         run: |
+          # Ensure the label exists
+          gh label create "workflow-report" \
+            --repo "$REPO" \
+            --description "Automated workflow run log" \
+            --color "0075ca" 2>/dev/null || true
           ISSUE_NUMBER=$(gh issue list \
             --repo "$REPO" \
             --label "workflow-report" \
@@ -50,13 +55,12 @@ jobs:
             --jq '.[0].number // empty')
 
           if [ -z "$ISSUE_NUMBER" ]; then
-            ISSUE_NUMBER=$(gh issue create \
+            ISSUE_URL=$(gh issue create \
               --repo "$REPO" \
               --title "📋 Workflow Run Log" \
               --body "This issue is automatically maintained as a rolling log of all workflow runs in this repository. Each workflow completion appends a comment below." \
-              --label "workflow-report" \
-              --json number \
-              --jq '.number')
+              --label "workflow-report")
+            ISSUE_NUMBER="${ISSUE_URL##*/}"
             echo "Created tracking issue #$ISSUE_NUMBER"
           fi
 
