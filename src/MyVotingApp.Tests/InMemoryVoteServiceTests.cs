@@ -96,4 +96,63 @@ public class InMemoryVoteServiceTests
 
         Assert.False(result);
     }
+
+    [Fact]
+    public async Task VoteAsync_ConcurrentVotes_AccumulateCorrectly()
+    {
+        var service = new InMemoryVoteService();
+        const int votesPerItem = 100;
+
+        var tasks = Enumerable.Range(0, votesPerItem)
+            .SelectMany(_ => new[]
+            {
+                service.VoteAsync(1),
+                service.VoteAsync(2),
+                service.VoteAsync(3)
+            });
+
+        var results = await Task.WhenAll(tasks);
+
+        Assert.All(results, r => Assert.True(r));
+
+        var voteResults = await service.GetResultsAsync();
+        Assert.All(voteResults, r => Assert.Equal(votesPerItem, r.VoteCount));
+    }
+
+    [Fact]
+    public async Task GetResultsAsync_AfterVoting_MapsItemsToCorrectCounts()
+    {
+        var service = new InMemoryVoteService();
+
+        await service.VoteAsync(1); // Pizza: 1
+        await service.VoteAsync(2); // Tacos: 1
+        await service.VoteAsync(2); // Tacos: 2
+        await service.VoteAsync(3); // Sushi: 1
+        await service.VoteAsync(3); // Sushi: 2
+        await service.VoteAsync(3); // Sushi: 3
+
+        var results = await service.GetResultsAsync();
+
+        Assert.Equal(3, results.Count);
+        Assert.Equal(1, results.Single(r => r.Item.Id == 1).VoteCount);
+        Assert.Equal(2, results.Single(r => r.Item.Id == 2).VoteCount);
+        Assert.Equal(3, results.Single(r => r.Item.Id == 3).VoteCount);
+    }
+
+    [Fact]
+    public async Task VoteAsync_InvalidId_DoesNotAffectValidCounts()
+    {
+        var service = new InMemoryVoteService();
+
+        await service.VoteAsync(1);
+        await service.VoteAsync(999);
+
+        var results = await service.GetResultsAsync();
+
+        var pizzaResult = Assert.Single(results, r => r.Item.Id == 1);
+        Assert.Equal(1, pizzaResult.VoteCount);
+
+        // Ensure no phantom entries were created
+        Assert.Equal(3, results.Count);
+    }
 }
