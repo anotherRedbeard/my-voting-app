@@ -4,6 +4,7 @@ on:
   workflow_run:
     workflows: ["*"]
     types: [completed]
+  workflow_dispatch:
 
 permissions:
   issues: write
