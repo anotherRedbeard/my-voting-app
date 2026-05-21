@@ -1,0 +1,95 @@
+name: Workflow Run Monitor
+
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+
+permissions:
+  issues: write
+  actions: read
+
+jobs:
+  log-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build run summary
+        id: summary
+        run: |
+          STATUS="${{ github.event.workflow_run.conclusion }}"
+          case "$STATUS" in
+            success)   ICON="✅" ;;
+            failure)   ICON="❌" ;;
+            cancelled) ICON="🚫" ;;
+            skipped)   ICON="⏭️" ;;
+            *)         ICON="⚠️" ;;
+          esac
+
+          START="${{ github.event.workflow_run.run_started_at }}"
+          END="${{ github.event.workflow_run.updated_at }}"
+          DURATION=$(( $(date -d "$END" +%s) - $(date -d "$START" +%s) ))
+          MINUTES=$(( DURATION / 60 ))
+          SECONDS=$(( DURATION % 60 ))
+
+          echo "icon=$ICON" >> $GITHUB_OUTPUT
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          echo "duration=${MINUTES}m ${SECONDS}s" >> $GITHUB_OUTPUT
+
+      - name: Find or create tracking issue
+        id: issue
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          ISSUE_NUMBER=$(gh issue list \
+            --repo "$REPO" \
+            --label "workflow-report" \
+            --state open \
+            --limit 1 \
+            --json number \
+            --jq '.[0].number // empty')
+
+          if [ -z "$ISSUE_NUMBER" ]; then
+            ISSUE_NUMBER=$(gh issue create \
+              --repo "$REPO" \
+              --title "📋 Workflow Run Log" \
+              --body "This issue is automatically maintained as a rolling log of all workflow runs in this repository. Each workflow completion appends a comment below." \
+              --label "workflow-report" \
+              --json number \
+              --jq '.number')
+            echo "Created tracking issue #$ISSUE_NUMBER"
+          fi
+
+          echo "number=$ISSUE_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Append run comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+        run: |
+          ICON="${{ steps.summary.outputs.icon }}"
+          STATUS="${{ steps.summary.outputs.status }}"
+          DURATION="${{ steps.summary.outputs.duration }}"
+          WORKFLOW="${{ github.event.workflow_run.name }}"
+          RUN_NUMBER="${{ github.event.workflow_run.run_number }}"
+          RUN_URL="${{ github.event.workflow_run.html_url }}"
+          TRIGGER="${{ github.event.workflow_run.event }}"
+          ACTOR="${{ github.event.workflow_run.actor.login }}"
+          STARTED="${{ github.event.workflow_run.run_started_at }}"
+          ISSUE="${{ steps.issue.outputs.number }}"
+
+          cat > /tmp/comment-body.md << COMMENT_EOF
+          ${ICON} **${WORKFLOW}** — run [#${RUN_NUMBER}](${RUN_URL})
+
+          | Field | Value |
+          |---|---|
+          | **Status** | \`${STATUS}\` |
+          | **Duration** | ${DURATION} |
+          | **Trigger** | \`${TRIGGER}\` |
+          | **Actor** | @${ACTOR} |
+          | **Started** | ${STARTED} |
+          COMMENT_EOF
+
+          gh issue comment "$ISSUE" \
+            --repo "$REPO" \
+            --body-file /tmp/comment-body.md
